@@ -1,135 +1,137 @@
 # LinkedIn Gaijin Jobs Scraper
 
-Un outil intelligent pour trouver des offres d'emploi adaptées aux étrangers ("gaijin-friendly") sur LinkedIn au Japon.
+An intelligent tool for finding foreign-friendly job listings on LinkedIn in Japan.
 
 ## 📋 Description
 
-Ce projet permet de collecter automatiquement des offres d'emploi sur LinkedIn et d'analyser leur compatibilité avec les travailleurs étrangers au Japon. L'outil utilise une analyse avancée du texte pour détecter les offres qui ne nécessitent pas de compétences en japonais, offrent un support de visa, et proposent un environnement de travail international.
+This project automatically collects job listings from LinkedIn and analyzes their compatibility with foreign workers in Japan. The tool uses advanced text analysis to detect job listings that don't require Japanese language skills, offer visa support, and provide an international work environment.
 
-## ✨ Fonctionnalités
+## ✨ Features
 
-- **Scraping automatisé** des offres d'emploi sur LinkedIn
-- **Analyse intelligente** pour évaluer si une offre est adaptée aux étrangers :
-  - Détection des exigences linguistiques en japonais
-  - Évaluation de l'environnement de travail international
-  - Analyse des avantages pour expatriés (visa, logement, etc.)
-  - Examen des politiques de congés
-  - Détection de la langue utilisée dans l'offre
-- **Génération de rapports** dans plusieurs formats :
-  - Export CSV avec toutes les données
-  - Export Excel formaté et filtrable
-  - Rapport HTML interactif avec visualisations
-- **Logging détaillé** pour le débogage et le suivi du processus
-- **Paramétrage flexible** via des arguments en ligne de commande
+- **Automated scraping** of job listings from LinkedIn
+- **Intelligent analysis** to evaluate if a job is suitable for foreigners:
+  - Detection of Japanese language requirements
+  - Evaluation of international work environment
+  - Analysis of expat benefits (visa, housing, etc.)
+  - Review of leave policies
+  - Detection of language used in the listing
+- **Report generation** in multiple formats:
+  - CSV export with all data
+  - Formatted and filterable Excel export
+  - Interactive HTML report with visualizations
+- **Detailed logging** for debugging and process tracking
+- **Flexible parameters** via command-line arguments
+- **Multilingual support** (English and French)
 
 ## 🔧 Installation
 
-### Prérequis
-- Python 3.8 ou supérieur
-- Navigateur Firefox (utilisé par Selenium)
+### Prerequisites
+- Python 3.8 or higher
+- Firefox browser (used by Selenium)
 
-### Étapes d'installation
+### Installation Steps
 
-1. Clonez ce dépôt :
+1. Clone this repository:
 ```bash
-git clone https://github.com/votre-username/linkedin-gaijin-jobs-scraper.git
+git clone https://github.com/your-username/linkedin-gaijin-jobs-scraper.git
 cd linkedin-gaijin-jobs-scraper
 ```
 
-2. Installez les dépendances :
+2. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Créez un fichier `.env` à la racine du projet avec vos identifiants LinkedIn :
+3. Create a `.env` file at the root of the project with your LinkedIn credentials:
 ```
-LINKEDIN_EMAIL=votre_email@exemple.com
-LINKEDIN_PASSWORD=votre_mot_de_passe
+LINKEDIN_EMAIL=your_email@example.com
+LINKEDIN_PASSWORD=your_password
 ```
 
-## 🚀 Utilisation
+## 🚀 Usage
 
-### Exécution du script principal
+### Running the Main Script
 
 ```bash
 python linkedin_scraper.py
 ```
 
-Le script va :
-1. Se connecter à LinkedIn avec vos identifiants
-2. Rechercher des offres d'emploi selon les critères configurés
-3. Analyser chaque offre pour déterminer si elle est adaptée aux étrangers
-4. Exporter les résultats dans différents formats
+The script will:
+1. Log in to LinkedIn with your credentials
+2. Search for jobs according to the configured criteria
+3. Analyze each job to determine if it is suitable for foreigners
+4. Export the results in different formats
 
-### Options de ligne de commande
+### Command Line Options
 
-Vous pouvez personnaliser l'exécution avec les options suivantes :
+You can customize the execution with the following options:
 
 ```bash
-python linkedin_scraper.py --pages 10 --keywords "Data Engineer,Machine Learning,AI" --location "Osaka, Japan"
+python linkedin_scraper.py --pages 10 --keywords "Data Engineer,Machine Learning,AI" --location "Osaka, Japan" --language en
 ```
 
-| Option | Description | Valeur par défaut |
+| Option | Description | Default Value |
 |--------|-------------|-------------------|
-| `--pages` | Nombre de pages à scraper | 5 |
-| `--keywords` | Mots-clés de recherche (séparés par des virgules) | Technical Consultant,Software Consultant,Professional Services |
-| `--location` | Localisation pour la recherche | Tokyo, Japan |
+| `--pages` | Number of pages to scrape | 5 |
+| `--keywords` | Search keywords (comma-separated) | Technical Consultant,Software Consultant,Professional Services |
+| `--location` | Search location | Tokyo, Japan |
+| `--language`, `-l` | Application language (en: English, fr: French) | en |
 
-### Personnalisation avancée
+### Advanced Customization
 
-Pour des modifications plus avancées, vous pouvez éditer directement le code source. Les principales fonctions de configuration se trouvent dans la fonction `main()` du fichier `linkedin_scraper.py`.
+For more advanced modifications, you can directly edit the source code. The main configuration functions are located in the `main()` function of the `linkedin_scraper.py` file.
 
-## 📊 Résultats
+## 📊 Results
 
-Les résultats sont exportés dans le dossier `exports/` sous différents formats :
+The results are exported to the `exports/` folder in different formats:
 
-- **CSV** : Données brutes pour analyse
-- **Excel** : Tableau formaté avec mise en forme conditionnelle
-- **HTML** : Rapport interactif avec graphiques et filtres
+- **CSV**: Raw data for analysis
+- **Excel**: Formatted table with conditional formatting
+- **HTML**: Interactive report with charts and filters
 
-Chaque offre contient les informations suivantes :
-- Titre du poste
-- Entreprise
-- Localisation
-- URL de l'offre
-- Score de compatibilité "gaijin-friendly"
-- Scores détaillés par catégorie
-- Jours de congés détectés
-- Avantages pour expatriés
+Each job contains the following information:
+- Job title
+- Company
+- Location
+- Job URL
+- "Gaijin-friendly" compatibility score
+- Detailed scores by category
+- Detected leave days
+- Expatriate benefits
 
-## 🧩 Structure du projet
+## 🧩 Project Structure
 
-- `linkedin_scraper.py` : Script principal pour le scraping et l'analyse
-- `linkedin_export.py` : Module pour l'export des données dans différents formats
-- `requirements.txt` : Liste des dépendances
-- `exports/` : Dossier contenant les fichiers exportés
+- `linkedin_scraper.py`: Main script for scraping and analysis
+- `linkedin_export.py`: Module for exporting data in different formats
+- `requirements.txt`: List of dependencies
+- `exports/`: Folder containing exported files
 
-## ⚙️ Comment ça fonctionne
+## ⚙️ How It Works
 
-L'analyse des offres d'emploi est basée sur un système de scoring multicritère :
+The analysis of job listings is based on a multi-criteria scoring system:
 
-1. **Analyse des exigences linguistiques en japonais** (détecte les mentions de JLPT, "native level", etc.)
-2. **Évaluation de l'environnement international** (mentions d'équipe internationale, langue de travail, etc.)
-3. **Analyse des avantages pour expatriés** (visa, logement, etc.)
-4. **Examen des politiques de congés** (jours de congés, flexibilité, etc.)
-5. **Détection de la langue** utilisée dans l'offre (une offre en anglais est généralement plus adaptée)
+1. **Analysis of Japanese language requirements** (detects mentions of JLPT, "native level", etc.)
+2. **Evaluation of international environment** (mentions of international team, working language, etc.)
+3. **Analysis of expatriate benefits** (visa, housing, etc.)
+4. **Review of leave policies** (leave days, flexibility, etc.)
+5. **Detection of language** used in the listing (an English listing is generally more suitable)
 
-Chaque critère contribue à un score global qui détermine si l'offre est "gaijin-friendly".
+Each criterion contributes to an overall score that determines if the job is "gaijin-friendly".
 
-## 🛡️ Avertissement légal
+## 🛡️ Legal Disclaimer
 
-Ce projet est conçu à des fins éducatives et personnelles uniquement. L'utilisation de ce script doit respecter les conditions d'utilisation de LinkedIn. Une utilisation excessive peut entraîner des limitations de votre compte LinkedIn. Utilisez de manière responsable en respectant des délais raisonnables entre les requêtes.
+This project is designed for educational and personal purposes only. The use of this script must comply with LinkedIn's terms of use. Excessive use may result in limitations on your LinkedIn account. Use responsibly by respecting reasonable time delays between requests.
 
-## 📜 Licence
+## 📜 License
 
-Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
+This project is licensed under the MIT License. See the `LICENSE` file for details.
 
-## 🤝 Contribution
+## 🤝 Contributing
 
-Les contributions sont les bienvenues ! N'hésitez pas à ouvrir une issue ou soumettre une pull request.
+Contributions are welcome! Feel free to open an issue or submit a pull request.
 
-1. Forkez le projet
-2. Créez votre branche de fonctionnalité (`git checkout -b feature/amazing-feature`)
-3. Committez vos changements (`git commit -m 'Add some amazing feature'`)
-4. Poussez vers la branche (`git push origin feature/amazing-feature`)
-5. Ouvrez une Pull Request 
+1. Fork the project
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request 

@@ -13,6 +13,8 @@ from langdetect import detect
 import re
 import logging
 import argparse
+# Import the localization system
+from localization import i18n, Localization
 
 # Configuration des logs
 logging.basicConfig(
@@ -24,14 +26,14 @@ logger = logging.getLogger(__name__)
 
 class LinkedInScraper:
     def __init__(self):
-        logger.info("Initialisation du scraper LinkedIn...")
+        logger.info(i18n.get('scraper_init'))
         load_dotenv()
         self.driver = None
         self.setup_driver()
         
     def setup_driver(self):
         """Configure le driver Firefox avec les options nécessaires"""
-        logger.info("Configuration du driver Firefox...")
+        logger.info(i18n.get('config_driver'))
         options = webdriver.FirefoxOptions()
         # Désactiver le mode headless pour le débogage
         # options.add_argument('--headless')
@@ -42,9 +44,9 @@ class LinkedInScraper:
             service = Service(GeckoDriverManager().install())
             self.driver = webdriver.Firefox(service=service, options=options)
             self.driver.maximize_window()  # Maximiser la fenêtre
-            logger.info("Driver Firefox configuré avec succès")
+            logger.info(i18n.get('driver_success'))
         except Exception as e:
-            logger.error(f"Échec de la configuration du driver: {str(e)}")
+            logger.error(i18n.get('driver_error', str(e)))
             raise
                 
     def login(self):
@@ -1407,15 +1409,20 @@ def main():
                       help="Mots-clés de recherche séparés par des virgules (défaut: 'Technical Consultant,Software Consultant,Professional Services')")
     parser.add_argument("--location", type=str, default="Tokyo, Japan",
                       help="Localisation pour la recherche (défaut: 'Tokyo, Japan')")
+    parser.add_argument("--language", "-l", type=str, choices=['en', 'fr'], default='en',
+                      help="Language for the application: English (en) or French (fr). Default: English (en)")
     
     # Parser les arguments
     args = parser.parse_args()
     
+    # Set the application language
+    i18n.language = args.language
+    
     # Convertir la chaîne de mots-clés en liste
     keywords = [keyword.strip() for keyword in args.keywords.split(",")]
     
-    logger.info("Démarrage du script")
-    logger.info(f"Configuration: {args.pages} pages, mots-clés: {keywords}, localisation: {args.location}")
+    logger.info(i18n.get('script_start'))
+    logger.info(i18n.get('config_info', args.pages, keywords, args.location))
     
     scraper = LinkedInScraper()
     try:
@@ -1431,12 +1438,12 @@ def main():
         
         # Afficher les statistiques
         friendly_jobs = [job for job in jobs if job['is_gaijin_friendly'] == 'Oui']
-        logger.info(f"Statistiques: {len(jobs)} offres au total, dont {len(friendly_jobs)} gaijin-friendly")
+        logger.info(i18n.get('stats_summary', len(jobs), len(friendly_jobs)))
     except Exception as e:
-        logger.error(f"Une erreur est survenue: {str(e)}")
+        logger.error(i18n.get('error_occurred', str(e)))
     finally:
         scraper.close()
-        logger.info("Script terminé")
+        logger.info(i18n.get('script_end'))
 
 if __name__ == "__main__":
     main() 
