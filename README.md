@@ -20,6 +20,7 @@ Ce projet permet de collecter automatiquement des offres d'emploi sur LinkedIn e
   - Export Excel formaté et filtrable
   - Rapport HTML interactif avec visualisations
 - **Logging détaillé** pour le débogage et le suivi du processus
+- **Paramétrage flexible** via des arguments en ligne de commande
 
 ## 🔧 Installation
 
@@ -60,17 +61,23 @@ Le script va :
 3. Analyser chaque offre pour déterminer si elle est adaptée aux étrangers
 4. Exporter les résultats dans différents formats
 
-### Personnalisation de la recherche
+### Options de ligne de commande
 
-Modifiez la fonction `main()` dans `linkedin_scraper.py` pour personnaliser votre recherche :
+Vous pouvez personnaliser l'exécution avec les options suivantes :
 
-```python
-def main():
-    # ...
-    keywords = ["Technical Consultant", "Software Consultant", "Professional Services"]
-    scraper.search_jobs(keywords=keywords, location="Tokyo, Japan")
-    # ...
+```bash
+python linkedin_scraper.py --pages 10 --keywords "Data Engineer,Machine Learning,AI" --location "Osaka, Japan"
 ```
+
+| Option | Description | Valeur par défaut |
+|--------|-------------|-------------------|
+| `--pages` | Nombre de pages à scraper | 5 |
+| `--keywords` | Mots-clés de recherche (séparés par des virgules) | Technical Consultant,Software Consultant,Professional Services |
+| `--location` | Localisation pour la recherche | Tokyo, Japan |
+
+### Personnalisation avancée
+
+Pour des modifications plus avancées, vous pouvez éditer directement le code source. Les principales fonctions de configuration se trouvent dans la fonction `main()` du fichier `linkedin_scraper.py`.
 
 ## 📊 Résultats
 

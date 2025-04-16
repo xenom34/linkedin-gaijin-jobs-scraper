@@ -12,6 +12,7 @@ import pandas as pd
 from langdetect import detect
 import re
 import logging
+import argparse
 
 # Configuration des logs
 logging.basicConfig(
@@ -1399,14 +1400,31 @@ class LinkedInScraper:
             self.driver.quit()
             
 def main():
+    # Configurer le parser d'arguments
+    parser = argparse.ArgumentParser(description="LinkedIn Gaijin Jobs Scraper")
+    parser.add_argument("--pages", type=int, default=5, help="Nombre de pages à scraper (défaut: 5)")
+    parser.add_argument("--keywords", type=str, default="Technical Consultant,Software Consultant,Professional Services",
+                      help="Mots-clés de recherche séparés par des virgules (défaut: 'Technical Consultant,Software Consultant,Professional Services')")
+    parser.add_argument("--location", type=str, default="Tokyo, Japan",
+                      help="Localisation pour la recherche (défaut: 'Tokyo, Japan')")
+    
+    # Parser les arguments
+    args = parser.parse_args()
+    
+    # Convertir la chaîne de mots-clés en liste
+    keywords = [keyword.strip() for keyword in args.keywords.split(",")]
+    
     logger.info("Démarrage du script")
+    logger.info(f"Configuration: {args.pages} pages, mots-clés: {keywords}, localisation: {args.location}")
+    
     scraper = LinkedInScraper()
     try:
         scraper.login()
-        # Recherche avec les mots-clés spécifiques et localisation à Tokyo
-        keywords = ["Technical Consultant", "Software Consultant", "Professional Services"]
-        scraper.search_jobs(keywords=keywords, location="Tokyo, Japan")
-        jobs = scraper.scrape_jobs()
+        # Recherche avec les mots-clés et localisation spécifiés
+        scraper.search_jobs(keywords=keywords, location=args.location)
+        
+        # Utiliser le nombre de pages spécifié
+        jobs = scraper.scrape_jobs(max_pages=args.pages)
         
         # Utiliser le nouvel exporteur
         scraper.export_data(jobs)
