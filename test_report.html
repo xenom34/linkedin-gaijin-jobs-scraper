@@ -1,0 +1,591 @@
+
+            <!DOCTYPE html>
+            <html lang="fr">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Rapport LinkedIn - Offres Gaijin Friendly</title>
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+                <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
+                <style>
+                    body { 
+                        padding: 20px; 
+                        font-family: Arial, sans-serif;
+                    }
+                    .score-high { 
+                        background-color: #C6EFCE; 
+                        color: #006100; 
+                    }
+                    .score-medium { 
+                        background-color: #FFEB9C; 
+                        color: #9C5700; 
+                    }
+                    .score-low { 
+                        background-color: #FFC7CE; 
+                        color: #9C0006; 
+                    }
+                    .gaijin-yes { 
+                        background-color: #C6EFCE; 
+                        color: #006100; 
+                        font-weight: bold;
+                    }
+                    .gaijin-no { 
+                        background-color: #FFC7CE; 
+                        color: #9C0006; 
+                    }
+                    .dashboard {
+                        margin-bottom: 30px;
+                        padding: 20px;
+                        background-color: #f8f9fa;
+                        border-radius: 8px;
+                    }
+                    .stat-box {
+                        text-align: center;
+                        padding: 15px;
+                        border-radius: 8px;
+                        margin-bottom: 15px;
+                        color: white;
+                    }
+                    .chart-container {
+                        height: 300px;
+                        margin-bottom: 30px;
+                    }
+                    h1, h2 { margin-bottom: 20px; }
+                    .filter-group {
+                        margin-bottom: 20px;
+                        padding: 15px;
+                        background-color: #e9ecef;
+                        border-radius: 8px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container-fluid">
+                    <h1 class="text-center">Rapport LinkedIn - Offres Gaijin Friendly</h1>
+                    
+                    <div class="dashboard row">
+                        <div class="col-md-3">
+                            <div class="stat-box bg-primary">
+                                <h4>Total des offres</h4>
+                                <h2 id="total-offers">-</h2>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-box bg-success">
+                                <h4>Offres Gaijin-friendly</h4>
+                                <h2 id="gaijin-friendly-count">-</h2>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-box bg-info">
+                                <h4>Score moyen</h4>
+                                <h2 id="average-score">-</h2>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-box bg-warning">
+                                <h4>Jours de congés moyen</h4>
+                                <h2 id="average-days">-</h2>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="chart-container">
+                                <canvas id="scoreDistributionChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="chart-container">
+                                <canvas id="categoryScoresChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <h4>Filtres</h4>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="min-score">Score minimum</label>
+                                    <input type="number" class="form-control" id="min-score" min="-50" max="100" value="0">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="company-filter">Entreprise</label>
+                                    <input type="text" class="form-control" id="company-filter">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-check mt-4">
+                                    <input class="form-check-input" type="checkbox" id="only-friendly">
+                                    <label class="form-check-label" for="only-friendly">
+                                        Seulement les offres Gaijin-friendly
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <button id="reset-filters" class="btn btn-secondary mt-4">Réinitialiser les filtres</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table id="jobsTable" class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Titre</th>
+                                    <th>Entreprise</th>
+                                    <th>Localisation</th>
+                                    <th>Gaijin-friendly</th>
+                                    <th>Score Total</th>
+                                    <th>Score Japonais</th>
+                                    <th>Score International</th>
+                                    <th>Score Avantages</th>
+                                    <th>Score Congés</th>
+                                    <th>Score Langue</th>
+                                    <th>Score Sentiment</th>
+                                    <th>Jours de congés</th>
+                                    <th>Détails</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Le contenu sera généré dynamiquement -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Modal pour les détails -->
+                <div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Détails de l'offre</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div id="jobDetails">
+                                    <!-- Contenu dynamique -->
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" id="openJobLink">Ouvrir l'offre LinkedIn</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+                <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+                <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+                <script>
+                // Données des offres d'emploi - importées de Python
+                const jobsData = [{"title": "Test Job 1", "company": "Test Company A", "location": "Tokyo, Japan", "url": "https://linkedin.com/job/1", "is_gaijin_friendly": "Oui", "score_total": 25, "score_japonais": 15, "score_international": 10, "score_avantages": 5, "score_conges": 0, "score_langue": 5, "score_sentiment": -10, "jours_conges": 15, "avantages": "Transport, Logement"}, {"title": "Test Job 2", "company": "Test Company B", "location": "Osaka, Japan", "url": "https://linkedin.com/job/2", "is_gaijin_friendly": "Non", "score_total": 5, "score_japonais": -10, "score_international": 10, "score_avantages": 5, "score_conges": 0, "score_langue": 0, "score_sentiment": 0, "jours_conges": "Non sp\u00e9cifi\u00e9", "avantages": ""}];
+                
+                // Fonction pour formater les scores avec classes de couleur
+                function formatScore(score) {
+                    let className = 'score-medium';
+                    if (score > 10) className = 'score-high';
+                    if (score < 0) className = 'score-low';
+                    return `<span class="${className}">${score}</span>`;
+                }
+
+                // Analyse des données pour le tableau de bord
+                function updateDashboard() {
+                    // Obtenir les données filtrées de DataTable
+                    const filteredData = $('#jobsTable').DataTable().rows({ search: 'applied' }).data();
+                    
+                    // Calculer les statistiques
+                    const totalOffers = filteredData.length;
+                    
+                    let gaijinFriendlyCount = 0;
+                    let totalScore = 0;
+                    let daysCount = 0;
+                    let validDaysCount = 0;
+                    
+                    for (let i = 0; i < totalOffers; i++) {
+                        const row = filteredData[i];
+                        if (row[3] === 'Oui') gaijinFriendlyCount++;
+                        totalScore += parseFloat(row[4]);
+                        
+                        // Jours de congés
+                        const days = row[11];
+                        if (days !== 'Non spécifié' && !isNaN(parseInt(days))) {
+                            daysCount += parseInt(days);
+                            validDaysCount++;
+                        }
+                    }
+                    
+                    const averageScore = totalOffers > 0 ? (totalScore / totalOffers).toFixed(1) : '-';
+                    const averageDays = validDaysCount > 0 ? (daysCount / validDaysCount).toFixed(1) : '-';
+                    
+                    // Mettre à jour le tableau de bord
+                    $('#total-offers').text(totalOffers);
+                    $('#gaijin-friendly-count').text(gaijinFriendlyCount);
+                    $('#average-score').text(averageScore);
+                    $('#average-days').text(averageDays);
+                    
+                    // Mettre à jour les graphiques
+                    updateCharts(filteredData);
+                }
+                
+                // Fonction pour mettre à jour les graphiques
+                function updateCharts(filteredData) {
+                    // Graphique de distribution des scores
+                    const scoreRanges = {
+                        'Négatif (<0)': 0,
+                        'Faible (0-10)': 0,
+                        'Moyen (11-20)': 0,
+                        'Élevé (21-30)': 0,
+                        'Très élevé (>30)': 0
+                    };
+                    
+                    for (let i = 0; i < filteredData.length; i++) {
+                        const score = parseFloat(filteredData[i][4]);
+                        if (score < 0) scoreRanges['Négatif (<0)']++;
+                        else if (score <= 10) scoreRanges['Faible (0-10)']++;
+                        else if (score <= 20) scoreRanges['Moyen (11-20)']++;
+                        else if (score <= 30) scoreRanges['Élevé (21-30)']++;
+                        else scoreRanges['Très élevé (>30)']++;
+                    }
+                    
+                    // Mettre à jour le graphique de distribution
+                    if (window.scoreDistChart) {
+                        window.scoreDistChart.data.datasets[0].data = Object.values(scoreRanges);
+                        window.scoreDistChart.update();
+                    } else {
+                        const ctx = document.getElementById('scoreDistributionChart').getContext('2d');
+                        window.scoreDistChart = new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: Object.keys(scoreRanges),
+                                datasets: [{
+                                    label: 'Nombre d'offres',
+                                    data: Object.values(scoreRanges),
+                                    backgroundColor: [
+                                        'rgba(255, 99, 132, 0.8)',
+                                        'rgba(255, 159, 64, 0.8)',
+                                        'rgba(255, 205, 86, 0.8)',
+                                        'rgba(75, 192, 192, 0.8)',
+                                        'rgba(54, 162, 235, 0.8)'
+                                    ]
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    legend: { display: false },
+                                    title: {
+                                        display: true,
+                                        text: 'Distribution des scores totaux'
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    
+                    // Graphique des scores par catégorie
+                    const categoryScores = {
+                        'Japonais': 0,
+                        'International': 0,
+                        'Avantages': 0,
+                        'Congés': 0,
+                        'Langue': 0,
+                        'Sentiment': 0
+                    };
+                    
+                    for (let i = 0; i < filteredData.length; i++) {
+                        categoryScores['Japonais'] += parseFloat(filteredData[i][5]);
+                        categoryScores['International'] += parseFloat(filteredData[i][6]);
+                        categoryScores['Avantages'] += parseFloat(filteredData[i][7]);
+                        categoryScores['Congés'] += parseFloat(filteredData[i][8]);
+                        categoryScores['Langue'] += parseFloat(filteredData[i][9]);
+                        categoryScores['Sentiment'] += parseFloat(filteredData[i][10]);
+                    }
+                    
+                    // Calculer les moyennes
+                    Object.keys(categoryScores).forEach(key => {
+                        categoryScores[key] = filteredData.length > 0 ? 
+                            (categoryScores[key] / filteredData.length).toFixed(1) : 0;
+                    });
+                    
+                    // Mettre à jour le graphique des catégories
+                    if (window.categoryChart) {
+                        window.categoryChart.data.datasets[0].data = Object.values(categoryScores);
+                        window.categoryChart.update();
+                    } else {
+                        const ctxCat = document.getElementById('categoryScoresChart').getContext('2d');
+                        window.categoryChart = new Chart(ctxCat, {
+                            type: 'radar',
+                            data: {
+                                labels: Object.keys(categoryScores),
+                                datasets: [{
+                                    label: 'Score moyen',
+                                    data: Object.values(categoryScores),
+                                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                    borderColor: 'rgb(54, 162, 235)',
+                                    pointBackgroundColor: 'rgb(54, 162, 235)',
+                                    pointBorderColor: '#fff',
+                                    pointHoverBackgroundColor: '#fff',
+                                    pointHoverBorderColor: 'rgb(54, 162, 235)'
+                                }]
+                            },
+                            options: {
+                                elements: {
+                                    line: { borderWidth: 3 }
+                                },
+                                plugins: {
+                                    title: {
+                                        display: true,
+                                        text: 'Scores moyens par catégorie'
+                                    }
+                                },
+                                scales: {
+                                    r: {
+                                        suggestedMin: -10,
+                                        suggestedMax: 20
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+
+                $(document).ready(function() {
+                    // Debug des données
+                    console.log("Données importées:", jobsData);
+                    
+                    // Si aucune donnée n'est disponible, afficher un message
+                    if (!jobsData || jobsData.length === 0) {
+                        $('body').prepend('<div class="alert alert-warning">Aucune donnée disponible</div>');
+                        return;
+                    }
+                    
+                    // Initialiser le tableau avec DataTables
+                    const table = $('#jobsTable').DataTable({
+                        data: jobsData.map(job => [
+                            job.title,
+                            job.company,
+                            job.location,
+                            job.is_gaijin_friendly,
+                            job.score_total,
+                            job.score_japonais,
+                            job.score_international,
+                            job.score_avantages,
+                            job.score_conges,
+                            job.score_langue,
+                            job.score_sentiment,
+                            job.jours_conges,
+                            `<button class="btn btn-sm btn-info view-details" data-index="${jobsData.indexOf(job)}">Détails</button>`
+                        ]),
+                        columnDefs: [
+                            {
+                                // Formatage des colonnes de score
+                                targets: [4, 5, 6, 7, 8, 9, 10],
+                                render: function(data) {
+                                    return formatScore(data);
+                                }
+                            },
+                            {
+                                // Formatage de la colonne Gaijin-friendly
+                                targets: 3,
+                                render: function(data) {
+                                    return data === 'Oui' ? 
+                                        '<span class="gaijin-yes">Oui</span>' : 
+                                        '<span class="gaijin-no">Non</span>';
+                                }
+                            }
+                        ],
+                        language: {
+                            url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/fr-FR.json'
+                        },
+                        order: [[4, 'desc']], // Trier par score total décroissant
+                        pageLength: 25,
+                        lengthMenu: [10, 25, 50, 100],
+                        initComplete: function() {
+                            updateDashboard();
+                        }
+                    });
+                    
+                    // Filtres personnalisés
+                    $('#min-score').on('change', function() {
+                        const minScore = $(this).val();
+                        $.fn.dataTable.ext.search.push(
+                            function(settings, data, dataIndex) {
+                                const score = parseFloat(data[4]) || 0;
+                                return score >= minScore;
+                            }
+                        );
+                        table.draw();
+                        // Supprimer le filtre après utilisation
+                        $.fn.dataTable.ext.search.pop();
+                        updateDashboard();
+                    });
+                    
+                    $('#company-filter').on('keyup', function() {
+                        const company = $(this).val().toLowerCase();
+                        table.column(1).search(company).draw();
+                        updateDashboard();
+                    });
+                    
+                    $('#only-friendly').on('change', function() {
+                        if (this.checked) {
+                            table.column(3).search('Oui').draw();
+                        } else {
+                            table.column(3).search('').draw();
+                        }
+                        updateDashboard();
+                    });
+                    
+                    $('#reset-filters').on('click', function() {
+                        $('#min-score').val(0);
+                        $('#company-filter').val('');
+                        $('#only-friendly').prop('checked', false);
+                        table.search('').columns().search('').draw();
+                        updateDashboard();
+                    });
+                    
+                    // Gérer l'événement pour voir les détails
+                    $('#jobsTable').on('click', '.view-details', function() {
+                        const index = $(this).data('index');
+                        const job = jobsData[index];
+                        
+                        // Préparer le contenu de la modal
+                        let detailsHtml = `
+                            <h4>${job.title}</h4>
+                            <p><strong>Entreprise:</strong> ${job.company}</p>
+                            <p><strong>Localisation:</strong> ${job.location}</p>
+                            <p><strong>Gaijin-friendly:</strong> ${job.is_gaijin_friendly}</p>
+                            <hr>
+                            <h5>Scores détaillés</h5>
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th>Catégorie</th>
+                                    <th>Score</th>
+                                    <th>Interprétation</th>
+                                </tr>
+                                <tr>
+                                    <td>Score Total</td>
+                                    <td>${formatScore(job.score_total)}</td>
+                                    <td>${interpreteScore(job.score_total, 'total')}</td>
+                                </tr>
+                                <tr>
+                                    <td>Japonais</td>
+                                    <td>${formatScore(job.score_japonais)}</td>
+                                    <td>${interpreteScore(job.score_japonais, 'japonais')}</td>
+                                </tr>
+                                <tr>
+                                    <td>International</td>
+                                    <td>${formatScore(job.score_international)}</td>
+                                    <td>${interpreteScore(job.score_international, 'international')}</td>
+                                </tr>
+                                <tr>
+                                    <td>Avantages</td>
+                                    <td>${formatScore(job.score_avantages)}</td>
+                                    <td>${interpreteScore(job.score_avantages, 'avantages')}</td>
+                                </tr>
+                                <tr>
+                                    <td>Congés</td>
+                                    <td>${formatScore(job.score_conges)}</td>
+                                    <td>${interpreteScore(job.score_conges, 'conges')}</td>
+                                </tr>
+                                <tr>
+                                    <td>Langue</td>
+                                    <td>${formatScore(job.score_langue)}</td>
+                                    <td>${interpreteScore(job.score_langue, 'langue')}</td>
+                                </tr>
+                                <tr>
+                                    <td>Sentiment</td>
+                                    <td>${formatScore(job.score_sentiment)}</td>
+                                    <td>${interpreteScore(job.score_sentiment, 'sentiment')}</td>
+                                </tr>
+                            </table>
+                        `;
+                        
+                        if (job.jours_conges && job.jours_conges !== 'Non spécifié') {
+                            detailsHtml += `<p><strong>Jours de congés:</strong> ${job.jours_conges}</p>`;
+                        }
+                        
+                        if (job.avantages && job.avantages.length > 0) {
+                            detailsHtml += `<p><strong>Avantages:</strong> ${job.avantages}</p>`;
+                        }
+                        
+                        // Mettre à jour le contenu de la modal
+                        $('#jobDetails').html(detailsHtml);
+                        $('#openJobLink').attr('data-url', job.url);
+                        
+                        // Afficher la modal
+                        const modal = new bootstrap.Modal(document.getElementById('detailsModal'));
+                        modal.show();
+                    });
+                    
+                    // Gérer l'ouverture du lien LinkedIn
+                    $('#openJobLink').on('click', function() {
+                        const url = $(this).data('url');
+                        if (url) {
+                            window.open(url, '_blank');
+                        }
+                    });
+                });
+                
+                // Fonction pour interpréter les scores
+                function interpreteScore(score, type) {
+                    score = parseFloat(score);
+                    
+                    const interpretations = {
+                        'total': {
+                            high: 'Cette offre est très adaptée aux étrangers avec un score élevé.',
+                            medium: 'Cette offre présente des caractéristiques moyennement adaptées aux étrangers.',
+                            low: 'Cette offre n'est probablement pas adaptée aux étrangers.'
+                        },
+                        'japonais': {
+                            high: 'Peu ou pas d'exigences en japonais.',
+                            medium: 'Niveau de japonais basique ou intermédiaire demandé.',
+                            low: 'Exigences élevées en japonais.'
+                        },
+                        'international': {
+                            high: 'Environnement de travail très international.',
+                            medium: 'Quelques aspects internationaux mentionnés.',
+                            low: 'Peu ou pas d'indications d'environnement international.'
+                        },
+                        'avantages': {
+                            high: 'Nombreux avantages pour expatriés mentionnés.',
+                            medium: 'Quelques avantages pour expatriés mentionnés.',
+                            low: 'Peu ou pas d'avantages pour expatriés.'
+                        },
+                        'conges': {
+                            high: 'Politique de congés généreuse.',
+                            medium: 'Politique de congés dans la moyenne.',
+                            low: 'Politique de congés peu avantageuse ou non mentionnée.'
+                        },
+                        'langue': {
+                            high: 'L'offre est rédigée en anglais ou en français.',
+                            medium: 'Mentions de langues étrangères dans l'offre.',
+                            low: 'L'offre est principalement en japonais.'
+                        },
+                        'sentiment': {
+                            high: 'Langage très positif envers les candidats internationaux.',
+                            medium: 'Quelques expressions positives pour les étrangers.',
+                            low: 'Langage peu accueillant pour les candidats étrangers.'
+                        }
+                    };
+                    
+                    if (score > 10) {
+                        return interpretations[type].high;
+                    } else if (score >= 0) {
+                        return interpretations[type].medium;
+                    } else {
+                        return interpretations[type].low;
+                    }
+                }
+                </script>
+            </body>
+            </html>
+            
